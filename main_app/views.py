@@ -1,7 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import Cat
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+# bring in feeding form from forms.py
+from .forms import FeedingForm
 #static data for example with class
 # class Cat():
 #     def __init__(self, name, breed, description, age):
@@ -35,9 +37,20 @@ def cats_index(request):
     
 def cats_detail(request, cat_id):
     cat = Cat.objects.get(id=cat_id)
+    # bring (instanitate) in feeding form
+    feeding_form = FeedingForm()
     return render(request, 'cats/detail.html', {
-        'cat':cat
-    })
+        'cat':cat,
+        'feeding_form': feeding_form
+    })       
+def add_feeding(request, cat_id):
+    feeding_form = FeedingForm(request.POST)
+    if feeding_form.is_valid():
+        new_feeding = feeding_form.save(commit=False)
+        new_feeding.cat_id = cat_id
+        new_feeding.save()
+    return redirect('detail', cat_id = cat_id)
+
 class CatCreate(CreateView):
     model = Cat
     fields = '__all__'
